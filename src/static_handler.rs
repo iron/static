@@ -1,5 +1,7 @@
-use iron::{Request, Response, Url, Handler, IronResult, IronError};
+use iron::{Request, Response, Url, Handler, IronResult, Set};
 use iron::status;
+use iron::response::modifiers::{Status, Body, Redirect};
+
 use mount::OriginalUrl;
 use requested_path::RequestedPath;
 
@@ -43,27 +45,22 @@ impl Handler for Static {
                 Some(original_url) => format!("{}/", original_url),
                 None => format!("{}/", req.url)
             };
-            let mut res = Response::with(status::MovedPermanently,
-                            format!("Redirecting to {}", redirect_path));
-            res.headers.extensions.insert("Location".to_string(), redirect_path);
+            let res = Response::new()
+                            .set(Status(status::MovedPermanently))
+                            .set(Body(format!("Redirecting to {}", redirect_path)))
+                            .set(Redirect(Url::parse(redirect_path.as_slice()).unwrap()));
             return Ok(res);
         }
 
         match requested_path.get_file() {
-            Some(file) =>
-                match Response::from_file(&file) {
-                    Ok(response) => {
-                        debug!("Serving static file at {}", file.display());
-                        return Ok(response);
-                    },
-                    Err(err) => {
-                        return Err(box err as IronError);
-                    }
-                },
+            Some(file) => {
+                debug!("Serving static file at {}", file.display());
+                Ok(Response::new().set(Body(file)))
+            },
 
             None =>
                 // If no file is found, return a 404 response.
-                return Ok(Response::with(status::NotFound, "File not found")),
+                return Ok(Response::new().set(Status(status::NotFound)).set(Body("File not found"))),
         }
     }
 }
