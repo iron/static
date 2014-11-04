@@ -1,6 +1,6 @@
 use iron::{Request, Response, Url, Handler, IronResult, Set};
 use iron::status;
-use iron::response::modifiers::{Status, Body};
+use iron::response::modifiers::{Status, Body, Redirect};
 
 use mount::OriginalUrl;
 use requested_path::RequestedPath;
@@ -45,10 +45,10 @@ impl Handler for Static {
                 Some(original_url) => format!("{}/", original_url),
                 None => format!("{}/", req.url)
             };
-            let mut res = Response::new()
+            let res = Response::new()
                             .set(Status(status::MovedPermanently))
-                            .set(Body(format!("Redirecting to {}", redirect_path)));
-            res.headers.extensions.insert("Location".to_string(), redirect_path);
+                            .set(Body(format!("Redirecting to {}", redirect_path)))
+                            .set(Redirect(Url::parse(redirect_path.as_slice()).unwrap()));
             return Ok(res);
         }
 
