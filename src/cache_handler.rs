@@ -68,7 +68,6 @@ impl Handler for StaticWithCache {
                 };
 
                 if last_modified_time <= if_modified_since {
-                    // Ok(Response::status(status::NotModified))
                     Ok(Response::new().set(Status(status::NotModified)))
                 } else {
                     self.defer_and_cache(request, last_modified_time)
