@@ -1,6 +1,7 @@
 #![crate_name = "static"]
 #![deny(missing_docs)]
 #![deny(warnings)]
+#![allow(deprecated)]
 #![feature(phase)]
 
 //! Static file-serving handler.
