@@ -13,4 +13,4 @@ mount = "*"
 time = "*"
 router = "*"
 iron-test = "*"
-
+conduit-mime-types = "*"
