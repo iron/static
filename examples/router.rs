@@ -7,7 +7,7 @@
 //!
 //! Make sure to generate the docs first with `cargo doc`,
 //! then build the tests with `cargo test`,
-//! then run the example with `./target/router`
+//! then run the example with `cargo run --example router`
 //!
 //! Visit http://127.0.0.1:3000/hello to view the routed path.
 //!
@@ -18,30 +18,24 @@ extern crate mount;
 extern crate router;
 extern crate "static" as static_file;
 
-use std::io::net::ip::Ipv4Addr;
-
 use iron::status;
-use iron::{Iron, Request, Response, IronResult, Set};
-use iron::response::modifiers::{Status, Body};
+use iron::{Iron, Request, Response, IronResult};
 use mount::Mount;
 use router::Router;
 use static_file::Static;
 
 fn say_hello(req: &mut Request) -> IronResult<Response> {
-    println!("Running send_hello handler, URL path: {}", req.url.path);
-    Ok(Response::new().set(Status(status::Ok)).set(Body("This request was routed!")))
+    println!("Running send_hello handler, URL path: {}", req.url);
+    Ok(Response::with((status::Ok, "This request was routed!")))
 }
 
 fn main() {
     let mut router = Router::new();
-    router
-        .get("/hello", say_hello);
+    router.get("/hello", say_hello);
 
     let mut mount = Mount::new();
-    mount
-        .mount("/", router)
-        .mount("/docs/", Static::new(Path::new("target/doc")));
+    mount.mount("/", router)
+         .mount("/docs/", Static::new(Path::new("target/doc")));
 
-    Iron::new(mount).listen((Ipv4Addr(127, 0, 0, 1), 3000));
+    Iron::new(mount).listen("192.168.1.41:3000").unwrap();
 }
-
