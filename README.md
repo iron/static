@@ -5,19 +5,15 @@ static [![Build Status](https://secure.travis-ci.org/iron/static.png?branch=mast
 
 ## Example
 
-This example uses the [mounting handler][mounting-handler] to serve files from several directories.
+This example uses the [mounting handler][mounting-handler] to serve files from the documentation directory.
 
 ```rust
 let mut mount = Mount::new();
 
-// Serve the shared JS/CSS at /
-mount.mount("/", Static::new(Path::new("target/doc/")));
-// Serve the static file docs at /doc/
-mount.mount("/doc/", Static::new(Path::new("target/doc/static/")));
-// Serve the source code at /src/
-mount.mount("/src/", Static::new(Path::new("target/doc/src/static/src/lib.rs.html")));
+// Serve the documentation at /
+mount.mount("/", Static::new(Path::new("target/doc")));
 
-Iron::new(mount).listen(Ipv4Addr(127, 0, 0, 1), 3000);
+Iron::new(mount).listen("127.0.0.1:3000");
 ```
 
 Note that `static` is a reserved keyword, so the crate will need to be imported as `extern crate "static" as static_file;`.
@@ -37,9 +33,8 @@ It works well in combination with the [mounting handler][mounting-handler].
 If you're using a `Cargo.toml` to manage dependencies, just add the `static` package to the toml:
 
 ```toml
-[dependencies.static]
-
-git = "https://github.com/iron/static.git"
+[dependencies]
+static = "*"
 ```
 
 Otherwise, `cargo build`, and the rlib will be in your `target` directory.

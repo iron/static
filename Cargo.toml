@@ -9,8 +9,9 @@ license = "MIT"
 
 [dependencies]
 iron = "*"
+hyper = "*"
 mount = "*"
 time = "*"
 router = "*"
 iron-test = "*"
-
+error = "*"

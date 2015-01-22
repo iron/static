@@ -10,10 +10,10 @@ use time::Timespec;
 
 use iron::{Handler, Url};
 use iron::method::Method::Get;
+use iron::status::Status;
 use hyper::header::{IfModifiedSince, CacheControl, LastModified};
 use iron_test::{mock, ProjectBuilder};
 use static_file::StaticWithCache;
-
 
 #[test]
 fn it_should_return_cache_headers() {
@@ -28,7 +28,7 @@ fn it_should_return_cache_headers() {
             assert!(res.headers.get::<CacheControl>().is_some());
             assert!(res.headers.get::<LastModified>().is_some());
         },
-        Err(e) => panic!("{}", e)
+        Err(e) => panic!("{:?}", e)
     }
 }
 
@@ -42,8 +42,8 @@ fn it_should_return_the_file_if_client_sends_no_modified_time() {
     let mut req = mock::request::at(Get, Url::parse("http://localhost:3000/file1.html").unwrap());
 
     match st.call(&mut req) {
-        Ok(res) => assert_eq!(res.status.and_then(|t| t.to_u32()).unwrap(), 200),
-        Err(e) => panic!("{}", e)
+        Ok(res) => assert_eq!(res.status.unwrap(), Status::Ok),
+        Err(e) => panic!("{:?}", e)
     }
 }
 
@@ -61,8 +61,8 @@ fn it_should_return_the_file_if_client_has_old_version() {
     req.headers.set(IfModifiedSince(time::at(one_hour_ago)));
 
     match st.call(&mut req) {
-        Ok(res) => assert_eq!(res.status.and_then(|t| t.to_u32()).unwrap(), 200),
-        Err(e) => panic!("{}", e)
+        Ok(res) => assert_eq!(res.status.unwrap(), Status::Ok),
+        Err(e) => panic!("{:?}", e)
     }
 }
 
@@ -77,8 +77,8 @@ fn it_should_return_304_if_client_has_file_cached() {
     req.headers.set(IfModifiedSince(time::now_utc()));
 
     match st.call(&mut req) {
-        Ok(res) => assert_eq!(res.status.and_then(|t| t.to_u32()).unwrap(), 304),
-        Err(e) => panic!("{}", e)
+        Ok(res) => assert_eq!(res.status.unwrap(), Status::NotModified),
+        Err(e) => panic!("{:?}", e)
     }
 }
 
@@ -93,8 +93,8 @@ fn it_should_cache_index_html_for_directory_path() {
     req.headers.set(IfModifiedSince(time::now_utc()));
 
     match st.call(&mut req) {
-        Ok(res) => assert_eq!(res.status.and_then(|t| t.to_u32()).unwrap(), 304),
-        Err(e) => panic!("{}", e)
+        Ok(res) => assert_eq!(res.status.unwrap(), Status::NotModified),
+        Err(e) => panic!("{:?}", e)
     }
 }
 
@@ -110,9 +110,9 @@ fn it_should_defer_to_static_handler_if_directory_misses_trailing_slash() {
 
     match st.call(&mut req) {
         Ok(res) => {
-            assert_eq!(res.status.and_then(|t| t.to_u32()).unwrap(), 301);
+            assert_eq!(res.status.unwrap(), Status::MovedPermanently);
             assert!(res.headers.get::<LastModified>().is_none());
         },
-        Err(e) => panic!("{}", e)
+        Err(e) => panic!("{:?}", e)
     }
 }
