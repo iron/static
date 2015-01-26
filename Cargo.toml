@@ -8,9 +8,12 @@ repository = "https://github.com/iron/static"
 license = "MIT"
 
 [dependencies]
+hyper = "*"
 iron = "*"
 mount = "*"
 time = "*"
 router = "*"
-iron-test = "*"
 
+[dependencies.iron-test]
+git = "https://github.com/aleksandrpak/iron-test.git"
+rev = "9c8f28fb1693bd96f1f2a89cc61619b5d60c476b"

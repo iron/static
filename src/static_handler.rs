@@ -1,5 +1,5 @@
-use iron::{Request, Response, Url, Handler, IronResult, Set};
-use iron::response::modifiers::{Status, Body, Redirect};
+use iron::{Request, Response, Handler, IronResult, Set};
+use iron::modifiers::Redirect;
 use iron::status;
 use mount::OriginalUrl;
 use requested_path::RequestedPath;
@@ -17,7 +17,6 @@ use requested_path::RequestedPath;
 /// If the path doesn't match any real object in the filesystem, the handler will return
 /// a Response with `status::NotFound`. If an IO error occurs whilst attempting to serve
 /// a file, `FileError(IoError)` will be returned.
-#[deriving(Clone)]
 pub struct Static {
     /// The path this handler is serving files from.
     pub root_path: Path
@@ -40,7 +39,7 @@ impl Handler for Static {
         // Otherwise, redirect to the directory equivalent of the URL.
         if requested_path.should_redirect(req) {
             // Perform an HTTP 301 Redirect.
-            let mut redirect_path = match req.extensions.get::<OriginalUrl, Url>() {
+            let mut redirect_path = match req.extensions.get::<OriginalUrl>() {
                 Some(original_url) => original_url,
                 None => &req.url
             }.clone();
@@ -49,22 +48,23 @@ impl Handler for Static {
             //
             // rust-url automatically turns an empty string in the last
             // slot in the path into a trailing slash.
-            redirect_path.path.push("".into_string());
+            redirect_path.path.push("".to_string());
 
-            return Ok(Response::new().set(Status(status::MovedPermanently))
-                          .set(Body(format!("Redirecting to {}", redirect_path)))
+            return Ok(Response::new()
+                          .set(status::MovedPermanently)
+                          .set(format!("Redirecting to {}", redirect_path))
                           .set(Redirect(redirect_path)));
         }
 
         match requested_path.get_file() {
             Some(path) =>
                 Ok(Response::new()
-                       .set(Status(status::Ok))
+                       .set(status::Ok)
                        // Won't panic because we know the file exists from get_file
-                       .set(Body(path))),
+                       .set(path)),
             None =>
                 // If no file is found, return a 404 response.
-                Ok(Response::new().set(Status(status::NotFound)).set(Body("File not found")))
+                Ok(Response::new().set(status::NotFound).set("File not found"))
         }
     }
 }
