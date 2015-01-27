@@ -28,7 +28,7 @@ impl StaticWithCache {
     fn defer_and_cache(&self, request: &mut Request,
                        modified: Timespec) -> IronResult<Response> {
         use hyper::header::{CacheControl, LastModified};
-        use hyper::header::common::cache_control::CacheDirective::{Public, MaxAge};
+        use hyper::header::CacheDirective::{Public, MaxAge};
 
         match self.static_handler.call(request) {
             Err(error) => Err(error),
