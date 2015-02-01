@@ -8,6 +8,7 @@ repository = "https://github.com/iron/static"
 license = "MIT"
 
 [dependencies]
+hyper="*"
 iron = "*"
 mount = "*"
 time = "*"
