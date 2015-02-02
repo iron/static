@@ -1,18 +1,14 @@
 #![crate_name = "static"]
 #![deny(missing_docs)]
 #![deny(warnings)]
-#![feature(phase)]
+
+#![feature(core, collections, io, path)]
 
 //! Static file-serving handler.
 
-#[phase(plugin)]
-extern crate regex_macros;
-extern crate regex;
 extern crate time;
 
-extern crate hyper;
 extern crate iron;
-#[phase(plugin, link)]
 extern crate log;
 extern crate mount;
 
