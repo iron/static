@@ -44,7 +44,7 @@ impl StaticWithCache {
     // Defers to the static handler, but adds cache headers to the response.
     fn defer_and_cache(&self, request: &mut Request,
                        modified: Timespec) -> IronResult<Response> {
-        use hyper::header::{CacheControl, CacheDirective, LastModified};
+        use iron::headers::{CacheControl, CacheDirective, LastModified};
 
         match self.static_handler.handle(request) {
             Err(error) => Err(error),
@@ -60,7 +60,7 @@ impl StaticWithCache {
 
 impl Handler for StaticWithCache {
     fn handle(&self, request: &mut Request) -> IronResult<Response> {
-        use hyper::header::IfModifiedSince;
+        use iron::headers::IfModifiedSince;
 
         let requested_path = RequestedPath::new(&self.static_handler.root_path, request);
 
@@ -71,7 +71,7 @@ impl Handler for StaticWithCache {
         match requested_path.get_file() {
             Some(file) => {
                 let last_modified_time = match file.stat() {
-                    Err(error) => return Err((IronError::new(FileError(error), status::Ok))),
+                    Err(error) => return Err((IronError::new(FileError(error), status::NotFound))),
 
                     Ok(file_stat) => {
                         Timespec::new((file_stat.modified / 1000) as i64, 0)

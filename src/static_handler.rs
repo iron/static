@@ -62,7 +62,7 @@ impl Handler for Static {
             Some(path) => Ok(Response::with((status::Ok, path))),
             None =>
                 // If no file is found, return a 404 response.
-                Ok(Response::with((status::NotFound, "File not found")))
+                Ok(Response::with(status::NotFound))
         }
     }
 }

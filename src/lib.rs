@@ -2,18 +2,12 @@
 #![deny(missing_docs)]
 #![deny(warnings)]
 
-#![feature(core)]
-#![feature(collections)]
-#![feature(io)]
-#![feature(path)]
+#![feature(core, collections, io, path)]
 
 //! Static file-serving handler.
 
-// extern crate regex_macros;
-// extern crate regex;
 extern crate time;
 
-extern crate hyper;
 extern crate iron;
 extern crate log;
 extern crate mount;
