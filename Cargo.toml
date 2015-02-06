@@ -13,7 +13,6 @@ iron = "*"
 time = "*"
 regex = "*"
 router = "*"
-#mount = "*"
 
 [dependencies.mount]
-git = "https://github.com/aleksandrpak/mount.git"
+git = "https://github.com/iron/mount.git"
