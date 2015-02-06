@@ -1,7 +1,8 @@
-use std::io::fs::PathExtensions;
+use std::old_io::fs::PathExtensions;
 use time::{self, Timespec};
 
 use iron::{status, Handler, IronResult, Request, Response};
+use iron::error::IronError;
 
 use requested_path::RequestedPath;
 use {Static};
@@ -30,7 +31,7 @@ impl StaticWithCache {
         use hyper::header::{CacheControl, LastModified};
         use hyper::header::CacheDirective::{Public, MaxAge};
 
-        match self.static_handler.call(request) {
+        match self.static_handler.handle(request) {
             Err(error) => Err(error),
 
             Ok(mut response) => {
@@ -43,20 +44,20 @@ impl StaticWithCache {
 }
 
 impl Handler for StaticWithCache {
-    fn call(&self, request: &mut Request) -> IronResult<Response> {
+    fn handle(&self, request: &mut Request) -> IronResult<Response> {
         use iron::Set;
         use hyper::header::IfModifiedSince;
 
         let requested_path = RequestedPath::new(&self.static_handler.root_path, request);
 
         if requested_path.should_redirect(request) {
-            return self.static_handler.call(request);
+            return self.static_handler.handle(request);
         }
 
         match requested_path.get_file() {
             Some(file) => {
                 let last_modified_time = match file.stat() {
-                    Err(error) => return Err(Box::new(error)),
+                    Err(error) => return Err(IronError::new(error, status::NotFound)),
 
                     Ok(file_stat) => {
                         Timespec::new((file_stat.modified / 1000) as i64, 0)
@@ -76,7 +77,7 @@ impl Handler for StaticWithCache {
                 }
             },
 
-            None => self.static_handler.call(request)
+            None => self.static_handler.handle(request)
         }
     }
 }

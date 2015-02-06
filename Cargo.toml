@@ -10,8 +10,10 @@ license = "MIT"
 [dependencies]
 hyper = "*"
 iron = "*"
-mount = "*"
 time = "*"
-router = "*"
 regex = "*"
-iron-test = "*"
+router = "*"
+#mount = "*"
+
+[dependencies.mount]
+git = "https://github.com/aleksandrpak/mount.git"

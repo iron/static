@@ -32,7 +32,7 @@ impl Static {
 }
 
 impl Handler for Static {
-    fn call(&self, req: &mut Request) -> IronResult<Response> {
+    fn handle(&self, req: &mut Request) -> IronResult<Response> {
         let requested_path = RequestedPath::new(&self.root_path, req);
 
         // If the URL ends in a slash, serve the file directly.
