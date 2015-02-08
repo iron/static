@@ -18,7 +18,7 @@ extern crate mount;
 extern crate router;
 extern crate "static" as static_file;
 
-use std::io::net::ip::Ipv4Addr;
+use std::old_io::net::ip::Ipv4Addr;
 
 use iron::status;
 use iron::{Iron, Request, Response, IronResult, Set};
