@@ -7,7 +7,7 @@ extern crate mount;
 // Run `cargo doc && cargo test && ./target/doc_server`, then
 // point your browser to http://127.0.0.1:3000/doc/
 
-use std::io::net::ip::Ipv4Addr;
+use std::old_io::net::ip::Ipv4Addr;
 
 use iron::Iron;
 use static_file::Static;
