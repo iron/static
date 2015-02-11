@@ -2,17 +2,19 @@
 #![deny(missing_docs)]
 #![deny(warnings)]
 #![feature(phase)]
+#[plugin]
+#[no_link]
 
 //! Static file-serving handler.
 
-#[phase(plugin)]
+#[feature(plugin)]
 extern crate regex_macros;
 extern crate regex;
 extern crate time;
 
 extern crate hyper;
 extern crate iron;
-#[phase(plugin, link)]
+#[feature(plugin, link)]
 extern crate log;
 extern crate mount;
 
