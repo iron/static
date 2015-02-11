@@ -1,4 +1,4 @@
-use std::io::fs::PathExtensions;
+use std::old_io::fs::PathExtensions;
 use time::{mod, Timespec};
 
 use iron::{status, Handler, IronResult, IronError, Request, Response};
