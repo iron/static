@@ -8,8 +8,10 @@ use iron::prelude::*;
 use iron::{Handler, status};
 use iron::modifier::Modifier;
 use iron::modifiers::Redirect;
+use iron::mime::Mime;
 use mount::OriginalUrl;
 use requested_path::RequestedPath;
+use mime_types::Types;
 
 /// The static file-serving `Handler`.
 ///
@@ -28,6 +30,10 @@ use requested_path::RequestedPath;
 pub struct Static {
     /// The path this handler is serving files from.
     pub root: Path,
+
+    /// The stored mime-type mapping
+    pub types: Types,
+
     cache: Option<Cache>,
 }
 
@@ -36,7 +42,11 @@ impl Static {
     ///
     /// If `Path::new("")` is given, files will be served from the current directory.
     pub fn new(root: Path) -> Static {
-        Static { root: root, cache: None }
+        Static {
+            root: root,
+            cache: None,
+            types: Types::new().unwrap(),
+        }
     }
 
     /// Specify the response's `cache-control` header with a given duration. Internally, this is
@@ -52,10 +62,14 @@ impl Static {
     }
 
     fn try_cache(&self, req: &mut Request, path: Path) -> IronResult<Response> {
-        match self.cache {
+        let mime: Mime = self.types.mime_for_path(&path).parse().unwrap();
+
+        let response = match self.cache {
             None => Ok(Response::with((status::Ok, path))),
             Some(ref cache) => cache.handle(req, path),
-        }
+        };
+
+        response.map(|r| r.set(mime))
     }
 }
 
@@ -131,10 +145,13 @@ impl Cache {
         use hyper::header::{CacheControl, LastModified, CacheDirective};
 
         let mut response = Response::with((status::Ok, path.clone()));
+
         let seconds = self.duration.num_seconds() as u32;
         let cache = vec![CacheDirective::Public, CacheDirective::MaxAge(seconds)];
+
         response.headers.set(CacheControl(cache));
         response.headers.set(LastModified(time::at(modified)));
+
         response
     }
 }

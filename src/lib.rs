@@ -12,6 +12,7 @@ extern crate iron;
 #[macro_use]
 extern crate log;
 extern crate mount;
+extern crate "conduit-mime-types" as mime_types;
 
 pub use static_handler::{Static, Cache};
 
