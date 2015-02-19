@@ -144,7 +144,7 @@ impl Cache {
     fn response_with_cache(&self, path: Path, modified: Timespec) -> Response {
         use hyper::header::{CacheControl, LastModified, CacheDirective};
 
-        let mut response = Response::with((status::Ok, path.clone()));
+        let mut response = Response::with((status::Ok, path));
 
         let seconds = self.duration.num_seconds() as u32;
         let cache = vec![CacheDirective::Public, CacheDirective::MaxAge(seconds)];
