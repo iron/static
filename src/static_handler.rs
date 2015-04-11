@@ -1,4 +1,4 @@
-use std::path::{PathBuf, AsPath};
+use std::path::{PathBuf, Path};
 use std::fs::PathExt;
 use std::time::Duration;
 use std::error::Error;
@@ -9,6 +9,7 @@ use iron::prelude::*;
 use iron::{Handler, status};
 use iron::modifier::Modifier;
 use iron::modifiers::Redirect;
+use iron::headers::HttpDate;
 use mount::OriginalUrl;
 use requested_path::RequestedPath;
 
@@ -36,8 +37,8 @@ impl Static {
     /// Create a new instance of `Static` with a given root path.
     ///
     /// If `Path::new("")` is given, files will be served from the current directory.
-    pub fn new<P: AsPath>(root: P) -> Static {
-        Static { root: root.as_path().to_path_buf(), cache: None }
+    pub fn new<P: AsRef<Path>>(root: P) -> Static {
+        Static { root: root.as_ref().to_path_buf(), cache: None }
     }
 
     /// Specify the response's `cache-control` header with a given duration. Internally, this is
@@ -52,10 +53,10 @@ impl Static {
         self.set(Cache::new(duration))
     }
 
-    fn try_cache<P: AsPath>(&self, req: &mut Request, path: P) -> IronResult<Response> {
+    fn try_cache<P: AsRef<Path>>(&self, req: &mut Request, path: P) -> IronResult<Response> {
         match self.cache {
-            None => Ok(Response::with((status::Ok, path.as_path()))),
-            Some(ref cache) => cache.handle(req, path.as_path()),
+            None => Ok(Response::with((status::Ok, path.as_ref()))),
+            Some(ref cache) => cache.handle(req, path.as_ref()),
         }
     }
 }
@@ -108,9 +109,9 @@ impl Cache {
         Cache { duration: duration }
     }
 
-    fn handle<P: AsPath>(&self, req: &mut Request, path: P) -> IronResult<Response> {
+    fn handle<P: AsRef<Path>>(&self, req: &mut Request, path: P) -> IronResult<Response> {
         use iron::headers::IfModifiedSince;
-        let path = path.as_path();
+        let path = path.as_ref();
 
         let last_modified_time = match path.metadata() {
             Err(error) => return Err(IronError::new(error, status::InternalServerError)),
@@ -119,7 +120,7 @@ impl Cache {
 
         let if_modified_since = match req.headers.get::<IfModifiedSince>().cloned() {
             None => return Ok(self.response_with_cache(path, last_modified_time)),
-            Some(time) => time.to_timespec(),
+            Some(IfModifiedSince(HttpDate(tm))) => tm.to_timespec(),
         };
 
         if last_modified_time <= if_modified_since {
@@ -129,14 +130,14 @@ impl Cache {
         }
     }
 
-    fn response_with_cache<P: AsPath>(&self, path: P, modified: Timespec) -> Response {
+    fn response_with_cache<P: AsRef<Path>>(&self, path: P, modified: Timespec) -> Response {
         use iron::headers::{CacheControl, LastModified, CacheDirective};
 
-        let mut response = Response::with((status::Ok, path.as_path()));
+        let mut response = Response::with((status::Ok, path.as_ref()));
         let seconds = self.duration.num_seconds() as u32;
         let cache = vec![CacheDirective::Public, CacheDirective::MaxAge(seconds)];
         response.headers.set(CacheControl(cache));
-        response.headers.set(LastModified(time::at(modified)));
+        response.headers.set(LastModified(HttpDate(time::at(modified))));
         response
     }
 }
