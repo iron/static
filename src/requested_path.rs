@@ -1,5 +1,5 @@
 use iron::Request;
-use std::path::{PathBuf, AsPath};
+use std::path::{Path, PathBuf};
 use std::fs::PathExt;
 
 pub struct RequestedPath {
@@ -7,8 +7,8 @@ pub struct RequestedPath {
 }
 
 impl RequestedPath {
-    pub fn new<P: AsPath>(root_path: P, request: &Request) -> RequestedPath {
-        let mut path = root_path.as_path().to_path_buf();
+    pub fn new<P: AsRef<Path>>(root_path: P, request: &Request) -> RequestedPath {
+        let mut path = root_path.as_ref().to_path_buf();
 
         path.extend(&request.url.path);
 
@@ -16,10 +16,9 @@ impl RequestedPath {
     }
 
     pub fn should_redirect(&self, request: &Request) -> bool {
-        let last_url_element = request.url.path
-            .as_slice()
+        let last_url_element = request.url.path[..]
             .last()
-            .map(|s| s.as_slice());
+            .map(|s| &s[..]);
 
         // As per servo/rust-url/serialize_path, URLs ending in a slash have an
         // empty string stored as the last component of their path. Rust-url
