@@ -5,7 +5,7 @@ extern crate time;
 extern crate hyper;
 extern crate iron;
 extern crate "iron-test" as iron_test;
-extern crate "static" as static_file;
+extern crate staticfile;
 
 use time::Timespec;
 
@@ -14,7 +14,7 @@ use iron::method::Method::Get;
 use iron::status::Status;
 use hyper::header::{IfModifiedSince, CacheControl, CacheDirective, LastModified};
 use iron_test::{mock, ProjectBuilder};
-use static_file::Static;
+use staticfile::Static;
 use std::io;
 use std::time::Duration;
 

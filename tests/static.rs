@@ -3,14 +3,14 @@
 extern crate hyper;
 extern crate iron;
 extern crate "iron-test" as iron_test;
-extern crate "static" as static_file;
+extern crate staticfile;
 
 use hyper::header::Location;
 use iron::method::Method::Get;
 use iron::{Url, Handler};
 use iron::status::Status;
 use iron_test::{mock, ProjectBuilder};
-use static_file::Static;
+use staticfile::Static;
 use std::io;
 
 #[test]

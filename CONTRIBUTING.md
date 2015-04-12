@@ -1,10 +1,10 @@
 # Contributing
 
-**static** uses the same conventions as **[Iron](https://github.com/iron/iron)**.
+**staticfile** uses the same conventions as **[Iron](https://github.com/iron/iron)**.
 
 ### Overview
 
-* Fork static to your own account
+* Fork staticfile to your own account
 * Create a feature branch, namespaced by.
   * bug/...
   * feat/...
