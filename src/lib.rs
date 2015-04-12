@@ -1,4 +1,4 @@
-#![crate_name = "static"]
+#![crate_name = "staticfile"]
 #![deny(missing_docs)]
 #![deny(warnings)]
 #![feature(std_misc, path_ext, fs_time)]

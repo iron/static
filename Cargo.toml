@@ -1,10 +1,10 @@
 [package]
 
-name = "static"
+name = "staticfile"
 version = "0.0.4"
 authors = ["Zach Pomerantz <zmp@umich.edu>"]
 description = "Static file serving for Iron."
-repository = "https://github.com/iron/static"
+repository = "https://github.com/iron/staticfile"
 license = "MIT"
 
 [dependencies]

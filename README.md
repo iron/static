@@ -1,4 +1,4 @@
-static [![Build Status](https://secure.travis-ci.org/iron/static.png?branch=master)](https://travis-ci.org/iron/static)
+staticfile [![Build Status](https://secure.travis-ci.org/iron/staticfile.png?branch=master)](https://travis-ci.org/iron/staticfile)
 ====
 
 > Static file-serving handler for the [Iron](https://github.com/iron/iron) web framework.
@@ -13,20 +13,18 @@ let mut mount = Mount::new();
 // Serve the shared JS/CSS at /
 mount.mount("/", Static::new(Path::new("target/doc/")));
 // Serve the static file docs at /doc/
-mount.mount("/doc/", Static::new(Path::new("target/doc/static/")));
+mount.mount("/doc/", Static::new(Path::new("target/doc/staticfile/")));
 // Serve the source code at /src/
-mount.mount("/src/", Static::new(Path::new("target/doc/src/static/lib.rs.html")));
+mount.mount("/src/", Static::new(Path::new("target/doc/src/staticfile/lib.rs.html")));
 
 Iron::new(mount).listen(Ipv4Addr(127, 0, 0, 1), 3000).unwrap();
 ```
-
-Note that `static` is a reserved keyword, so the crate will need to be imported as `extern crate "static" as static_file;`.
 
 See [`examples/doc_server.rs`](examples/doc_server.rs) for a complete example that you can compile.
 
 ## Overview
 
-static is a part of Iron's [core bundle](https://github.com/iron/core).
+staticfile is a part of Iron's [core bundle](https://github.com/iron/core).
 
 - Serve static files from a given path.
 
@@ -34,19 +32,19 @@ It works well in combination with the [mounting handler][mounting-handler].
 
 ## Installation
 
-If you're using a `Cargo.toml` to manage dependencies, just add the `static` package to the toml:
+If you're using a `Cargo.toml` to manage dependencies, just add the `staticfile` package to the toml:
 
 ```toml
-[dependencies.static]
+[dependencies.staticfile]
 
-git = "https://github.com/iron/static.git"
+git = "https://github.com/iron/staticfile.git"
 ```
 
 Otherwise, `cargo build`, and the rlib will be in your `target` directory.
 
-## [Documentation](http://ironframework.io/doc/static)
+## [Documentation](http://ironframework.io/doc/staticfile)
 
-Along with the [online documentation](http://ironframework.io/doc/static),
+Along with the [online documentation](http://ironframework.io/doc/staticfile),
 you can build a local copy with `cargo doc`.
 
 ## Get Help
