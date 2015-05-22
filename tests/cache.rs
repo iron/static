@@ -1,4 +1,4 @@
-#![feature(std_misc)]
+#![feature(duration)]
 
 extern crate time;
 
@@ -27,7 +27,7 @@ fn it_should_return_cache_headers() {
     let p = ProjectBuilder::new("example").file("file1.html", "this is file1");
     p.build();
 
-    let st = Static::new(p.root().clone()).cache(Duration::days(30));
+    let st = Static::new(p.root().clone()).cache(Duration::from_secs(30*24*60*60));
     let mut stream = MockStream::new(Cursor::new("".to_string().into_bytes()));
     let mut reader = BufReader::new(&mut stream as &mut NetworkStream);
     let mut req = mock::request::new(Get,
@@ -50,7 +50,7 @@ fn it_should_return_the_file_if_client_sends_no_modified_time() {
     let p = ProjectBuilder::new("example").file("file1.html", "this is file1");
     p.build();
 
-    let st = Static::new(p.root().clone()).cache(Duration::days(30));
+    let st = Static::new(p.root().clone()).cache(Duration::from_secs(30*24*60*60));
     let mut stream = MockStream::new(Cursor::new("".to_string().into_bytes()));
     let mut reader = BufReader::new(&mut stream as &mut NetworkStream);
     let mut req = mock::request::new(Get,
@@ -67,7 +67,7 @@ fn it_should_return_the_file_if_client_has_old_version() {
     let p = ProjectBuilder::new("example").file("file1.html", "this is file1");
     p.build();
 
-    let st = Static::new(p.root().clone()).cache(Duration::days(30));
+    let st = Static::new(p.root().clone()).cache(Duration::from_secs(30*24*60*60));
     let mut stream = MockStream::new(Cursor::new("".to_string().into_bytes()));
     let mut reader = BufReader::new(&mut stream as &mut NetworkStream);
     let mut req = mock::request::new(Get,
@@ -88,7 +88,7 @@ fn it_should_return_304_if_client_has_file_cached() {
     let p = ProjectBuilder::new("example").file("file1.html", "this is file1");
     p.build();
 
-    let st = Static::new(p.root().clone()).cache(Duration::days(30));
+    let st = Static::new(p.root().clone()).cache(Duration::from_secs(30*24*60*60));
     let mut stream = MockStream::new(Cursor::new("".to_string().into_bytes()));
     let mut reader = BufReader::new(&mut stream as &mut NetworkStream);
     let mut req = mock::request::new(Get,
@@ -106,7 +106,7 @@ fn it_should_cache_index_html_for_directory_path() {
     let p = ProjectBuilder::new("example").file("dir/index.html", "this is index");
     p.build();
 
-    let st = Static::new(p.root().clone()).cache(Duration::days(30));
+    let st = Static::new(p.root().clone()).cache(Duration::from_secs(30*24*60*60));
     let mut stream = MockStream::new(Cursor::new("".to_string().into_bytes()));
     let mut reader = BufReader::new(&mut stream as &mut NetworkStream);
     let mut req = mock::request::new(Get,
@@ -124,7 +124,7 @@ fn it_should_defer_to_static_handler_if_directory_misses_trailing_slash() {
     let p = ProjectBuilder::new("example").file("dir/index.html", "this is index");
     p.build();
 
-    let st = Static::new(p.root().clone()).cache(Duration::days(30));
+    let st = Static::new(p.root().clone()).cache(Duration::from_secs(30*24*60*60));
     let mut stream = MockStream::new(Cursor::new("".to_string().into_bytes()));
     let mut reader = BufReader::new(&mut stream as &mut NetworkStream);
     let mut req = mock::request::new(Get,
