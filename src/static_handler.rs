@@ -137,7 +137,7 @@ impl Cache {
         use iron::headers::{CacheControl, LastModified, CacheDirective, HttpDate};
 
         let mut response = Response::with((status::Ok, path.as_ref()));
-        let seconds = self.duration.num_seconds() as u32;
+        let seconds = self.duration.secs() as u32;
         let cache = vec![CacheDirective::Public, CacheDirective::MaxAge(seconds)];
         response.headers.set(CacheControl(cache));
         response.headers.set(LastModified(HttpDate(time::at(modified))));
