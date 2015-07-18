@@ -6,6 +6,7 @@ authors = ["Zach Pomerantz <zmp@umich.edu>"]
 description = "Static file serving for Iron."
 repository = "https://github.com/iron/staticfile"
 license = "MIT"
+keywords = ["iron", "web", "http"]
 
 [features]
 cache = ["filetime"]
