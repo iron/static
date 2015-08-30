@@ -11,7 +11,7 @@ license = "MIT"
 cache = ["filetime"]
 
 [dependencies]
-iron = "0.1"
+iron = "0.2.1"
 mount = "0"
 time = "0.1"
 log = "0.3"
