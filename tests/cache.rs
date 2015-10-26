@@ -9,7 +9,7 @@ extern crate staticfile;
 
 #[cfg(feature = "cache")]
 mod cache {
-    use time::{Timespec};
+    use time::Timespec;
 
     #[cfg(feature = "cache")]
     use std::time::Duration;
@@ -32,7 +32,7 @@ mod cache {
         let p = ProjectBuilder::new("example").file("file1.html", "this is file1");
         p.build();
 
-        let st = Static::new(p.root().clone()).cache(Duration::from_secs(30*24*60*60));
+        let st = Static::new(p.root().clone()).cache(Duration::from_secs(30 * 24 * 60 * 60));
         let mut stream = MockStream::new(Cursor::new("".to_string().into_bytes()));
         let mut reader = BufReader::new(&mut stream as &mut NetworkStream);
         let mut req = mock::request::new(Get,
@@ -45,8 +45,8 @@ mod cache {
                 let cache = res.headers.get::<CacheControl>().unwrap();
                 let directives = vec![CacheDirective::Public, CacheDirective::MaxAge(2592000)];
                 assert_eq!(*cache, CacheControl(directives));
-            },
-            Err(e) => panic!("{}", e)
+            }
+            Err(e) => panic!("{}", e),
         }
     }
 
@@ -56,7 +56,7 @@ mod cache {
         let p = ProjectBuilder::new("example").file("file1.html", "this is file1");
         p.build();
 
-        let st = Static::new(p.root().clone()).cache(Duration::from_secs(30*24*60*60));
+        let st = Static::new(p.root().clone()).cache(Duration::from_secs(30 * 24 * 60 * 60));
         let mut stream = MockStream::new(Cursor::new("".to_string().into_bytes()));
         let mut reader = BufReader::new(&mut stream as &mut NetworkStream);
         let mut req = mock::request::new(Get,
@@ -64,7 +64,7 @@ mod cache {
                                          &mut reader);
         match st.handle(&mut req) {
             Ok(res) => assert_eq!(res.status.unwrap(), Status::Ok),
-            Err(e) => panic!("{}", e)
+            Err(e) => panic!("{}", e),
         }
     }
 
@@ -74,7 +74,7 @@ mod cache {
         let p = ProjectBuilder::new("example").file("file1.html", "this is file1");
         p.build();
 
-        let st = Static::new(p.root().clone()).cache(Duration::from_secs(30*24*60*60));
+        let st = Static::new(p.root().clone()).cache(Duration::from_secs(30 * 24 * 60 * 60));
         let mut stream = MockStream::new(Cursor::new("".to_string().into_bytes()));
         let mut reader = BufReader::new(&mut stream as &mut NetworkStream);
         let mut req = mock::request::new(Get,
@@ -86,7 +86,7 @@ mod cache {
         req.headers.set(IfModifiedSince(HttpDate(time::at(one_hour_ago))));
         match st.handle(&mut req) {
             Ok(res) => assert_eq!(res.status.unwrap(), Status::Ok),
-            Err(e) => panic!("{}", e)
+            Err(e) => panic!("{}", e),
         }
     }
 
@@ -96,7 +96,7 @@ mod cache {
         let p = ProjectBuilder::new("example").file("file1.html", "this is file1");
         p.build();
 
-        let st = Static::new(p.root().clone()).cache(Duration::from_secs(30*24*60*60));
+        let st = Static::new(p.root().clone()).cache(Duration::from_secs(30 * 24 * 60 * 60));
         let mut stream = MockStream::new(Cursor::new("".to_string().into_bytes()));
         let mut reader = BufReader::new(&mut stream as &mut NetworkStream);
         let mut req = mock::request::new(Get,
@@ -105,7 +105,7 @@ mod cache {
         req.headers.set(IfModifiedSince(HttpDate(time::now_utc())));
         match st.handle(&mut req) {
             Ok(res) => assert_eq!(res.status.unwrap(), Status::NotModified),
-            Err(e) => panic!("{}", e)
+            Err(e) => panic!("{}", e),
         }
     }
 
@@ -115,7 +115,7 @@ mod cache {
         let p = ProjectBuilder::new("example").file("dir/index.html", "this is index");
         p.build();
 
-        let st = Static::new(p.root().clone()).cache(Duration::from_secs(30*24*60*60));
+        let st = Static::new(p.root().clone()).cache(Duration::from_secs(30 * 24 * 60 * 60));
         let mut stream = MockStream::new(Cursor::new("".to_string().into_bytes()));
         let mut reader = BufReader::new(&mut stream as &mut NetworkStream);
         let mut req = mock::request::new(Get,
@@ -124,7 +124,7 @@ mod cache {
         req.headers.set(IfModifiedSince(HttpDate(time::now_utc())));
         match st.handle(&mut req) {
             Ok(res) => assert_eq!(res.status.unwrap(), Status::NotModified),
-            Err(e) => panic!("{}", e)
+            Err(e) => panic!("{}", e),
         }
     }
 
@@ -134,7 +134,7 @@ mod cache {
         let p = ProjectBuilder::new("example").file("dir/index.html", "this is index");
         p.build();
 
-        let st = Static::new(p.root().clone()).cache(Duration::from_secs(30*24*60*60));
+        let st = Static::new(p.root().clone()).cache(Duration::from_secs(30 * 24 * 60 * 60));
         let mut stream = MockStream::new(Cursor::new("".to_string().into_bytes()));
         let mut reader = BufReader::new(&mut stream as &mut NetworkStream);
         let mut req = mock::request::new(Get,
@@ -145,9 +145,8 @@ mod cache {
             Ok(res) => {
                 assert_eq!(res.status.unwrap(), Status::MovedPermanently);
                 assert!(res.headers.get::<LastModified>().is_none());
-            },
-            Err(e) => panic!("{}", e)
+            }
+            Err(e) => panic!("{}", e),
         }
     }
 }
-

@@ -28,20 +28,18 @@ use staticfile::Static;
 use std::path::Path;
 
 fn say_hello(req: &mut Request) -> IronResult<Response> {
-    println!("Running send_hello handler, URL path: {}", req.url.path.join("/"));
+    println!("Running send_hello handler, URL path: {}",
+             req.url.path.join("/"));
     Ok(Response::with((status::Ok, "This request was routed!")))
 }
 
 fn main() {
     let mut router = Router::new();
-    router
-        .get("/hello", say_hello);
+    router.get("/hello", say_hello);
 
     let mut mount = Mount::new();
-    mount
-        .mount("/", router)
-        .mount("/docs/", Static::new(Path::new("target/doc")));
+    mount.mount("/", router)
+         .mount("/docs/", Static::new(Path::new("target/doc")));
 
     Iron::new(mount).http("127.0.0.1:3000").unwrap();
 }
-

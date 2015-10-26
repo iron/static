@@ -21,7 +21,8 @@ fn main() {
     // Serve the static file docs at /doc/
     mount.mount("/doc/", Static::new(Path::new("target/doc/staticfile/")));
     // Serve the source code at /src/
-    mount.mount("/src/", Static::new(Path::new("target/doc/src/staticfile/lib.rs.html")));
+    mount.mount("/src/",
+                Static::new(Path::new("target/doc/src/staticfile/lib.rs.html")));
 
     println!("Doc server running on http://localhost:3000/doc/");
 

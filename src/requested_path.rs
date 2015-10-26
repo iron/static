@@ -17,9 +17,10 @@ impl RequestedPath {
     }
 
     pub fn should_redirect(&self, metadata: &Metadata, request: &Request) -> bool {
-        let last_url_element = request.url.path
-            .last()
-            .map(|s| s.as_ref());
+        let last_url_element = request.url
+                                      .path
+                                      .last()
+                                      .map(|s| s.as_ref());
 
         // As per servo/rust-url/serialize_path, URLs ending in a slash have an
         // empty string stored as the last component of their path. Rust-url
@@ -43,12 +44,11 @@ impl RequestedPath {
         let index_path = self.path.join("index.html");
 
         match fs::metadata(&index_path) {
-            Ok(m) =>
-                if m.is_file() {
-                    Some(index_path)
-                } else {
-                    None
-                },
+            Ok(m) => if m.is_file() {
+                Some(index_path)
+            } else {
+                None
+            },
             Err(_) => None,
         }
     }
