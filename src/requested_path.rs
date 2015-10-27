@@ -44,11 +44,7 @@ impl RequestedPath {
         let index_path = self.path.join("index.html");
 
         match fs::metadata(&index_path) {
-            Ok(m) => if m.is_file() {
-                Some(index_path)
-            } else {
-                None
-            },
+            Ok(m) if m.is_file() => Some(index_path),
             Err(_) => None,
         }
     }

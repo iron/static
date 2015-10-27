@@ -103,10 +103,9 @@ impl Handler for Static {
         if requested_path.should_redirect(&metadata, req) {
             // Perform an HTTP 301 Redirect.
             let mut redirect_path = match req.extensions.get::<OriginalUrl>() {
-                                        None => &req.url,
-                                        Some(original_url) => original_url,
-                                    }
-                                    .clone();
+                None => &req.url,
+                Some(original_url) => original_url,
+            }.clone();
 
             // Append the trailing slash
             //
