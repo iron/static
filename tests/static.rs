@@ -35,8 +35,8 @@ fn serves_non_default_file_from_absolute_root_path() {
             let mut body = Vec::new();
             res.body.unwrap().write_body(&mut ResponseBody::new(&mut body)).unwrap();
             assert_eq!(str::from_utf8(&body).unwrap(), "this is file1");
-        },
-        Err(e) => panic!("{}", e)
+        }
+        Err(e) => panic!("{}", e),
     }
 }
 
@@ -55,8 +55,8 @@ fn serves_default_file_from_absolute_root_path() {
             let mut body = Vec::new();
             res.body.unwrap().write_body(&mut ResponseBody::new(&mut body)).unwrap();
             assert_eq!(str::from_utf8(&body).unwrap(), "this is index");
-        },
-        Err(e) => panic!("{}", e)
+        }
+        Err(e) => panic!("{}", e),
     }
 }
 
@@ -73,7 +73,7 @@ fn returns_404_if_file_not_found() {
 
     match st.handle(&mut req) {
         Ok(res) => panic!("Expected IronError, got Response: {}", res),
-        Err(e) => assert_eq!(e.response.status.unwrap(), Status::NotFound)
+        Err(e) => assert_eq!(e.response.status.unwrap(), Status::NotFound),
     }
 }
 
@@ -94,7 +94,7 @@ fn redirects_if_trailing_slash_is_missing() {
             assert_eq!(res.status.unwrap(), Status::MovedPermanently);
             assert_eq!(res.headers.get::<Location>().unwrap(),
                        &Location("http://localhost:3000/dir/".to_string()));
-        },
-        Err(e) => panic!("{}", e)
+        }
+        Err(e) => panic!("{}", e),
     }
 }

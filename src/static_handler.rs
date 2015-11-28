@@ -45,7 +45,7 @@ impl Static {
     pub fn new<P: AsRef<Path>>(root: P) -> Static {
         Static {
             root: root.as_ref().to_path_buf(),
-            cache: None
+            cache: None,
         }
     }
 
@@ -54,9 +54,7 @@ impl Static {
     /// If `Path::new("")` is given, files will be served from the current directory.
     #[cfg(not(feature = "cache"))]
     pub fn new<P: AsRef<Path>>(root: P) -> Static {
-        Static {
-            root: root.as_ref().to_path_buf(),
-        }
+        Static { root: root.as_ref().to_path_buf() }
     }
 
     /// Specify the response's `cache-control` header with a given duration. Internally, this is
@@ -96,8 +94,8 @@ impl Handler for Static {
                     _ => status::InternalServerError,
                 };
 
-                return Err(IronError::new(e, status))
-            },
+                return Err(IronError::new(e, status));
+            }
         };
 
         // If the URL ends in a slash, serve the file directly.
@@ -169,7 +167,7 @@ impl Cache {
 
                 let time = FileTime::from_last_modification_time(&metadata);
                 Timespec::new(time.seconds() as i64, time.nanoseconds() as i32)
-            },
+            }
         };
 
         if last_modified_time <= if_modified_since {
@@ -203,7 +201,9 @@ impl Modifier<Static> for Cache {
 pub struct NoFile;
 
 impl Error for NoFile {
-    fn description(&self) -> &str { "File not found" }
+    fn description(&self) -> &str {
+        "File not found"
+    }
 }
 
 impl fmt::Display for NoFile {
