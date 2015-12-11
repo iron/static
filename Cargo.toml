@@ -22,5 +22,5 @@ optional = true
 
 [dev-dependencies]
 iron-test = "0"
-hyper = "0.6"
+hyper = "0.7"
 router = "0"
