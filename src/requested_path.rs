@@ -2,16 +2,22 @@ use iron::Request;
 use std::path::{PathBuf, Path};
 use std::fs::{self, Metadata};
 use std::convert::AsRef;
+use url::percent_encoding::percent_decode;
 
 pub struct RequestedPath {
     pub path: PathBuf,
 }
 
+#[inline]
+fn decode_percents(string: &String) -> String {
+    String::from_utf8(percent_decode(string.as_bytes())).unwrap()
+}
+
 impl RequestedPath {
     pub fn new<P: AsRef<Path>>(root_path: P, request: &Request) -> RequestedPath {
         let mut path = root_path.as_ref().to_path_buf();
-
-        path.extend(&request.url.path);
+        let decoded_req_path = request.url.path.iter().map(decode_percents);
+        path.extend(decoded_req_path);
 
         RequestedPath { path: path }
     }

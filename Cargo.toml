@@ -16,6 +16,9 @@ mount = "0"
 time = "0.1"
 log = "0.3"
 
+[dependencies.url]
+git = "https://github.com/servo/rust-url"
+
 [dependencies.filetime]
 version = "0.1"
 optional = true
