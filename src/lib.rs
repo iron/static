@@ -13,6 +13,7 @@ extern crate iron;
 #[macro_use]
 extern crate log;
 extern crate mount;
+extern crate url;
 
 pub use static_handler::Static;
 #[cfg(feature = "cache")]

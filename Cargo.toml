@@ -16,11 +16,14 @@ mount = "0"
 time = "0.1"
 log = "0.3"
 
+[dependencies.url]
+git = "https://github.com/servo/rust-url"
+
 [dependencies.filetime]
 version = "0.1"
 optional = true
 
 [dev-dependencies]
 iron-test = "0"
-hyper = "0.6"
+hyper = "0.7"
 router = "0"
