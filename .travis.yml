@@ -1,3 +1,8 @@
 language: rust
 rust: nightly
+script:
+  - cargo build --verbose
+  - cargo test --verbose
+  - cargo build --features "cache"
+  - cargo test --features "cache"
 after_success: 'curl https://raw.githubusercontent.com/iron-bot/build-doc/master/build-doc.sh | sh '
