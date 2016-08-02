@@ -164,7 +164,7 @@ impl Cache {
                 use filetime::FileTime;
 
                 let time = FileTime::from_last_modification_time(&metadata);
-                Timespec::new(time.seconds() as i64, time.nanoseconds() as i32)
+                Timespec::new(time.seconds() as i64, 0)
             },
         };
 
