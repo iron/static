@@ -19,3 +19,4 @@ pub use static_handler::Cache;
 
 mod requested_path;
 mod static_handler;
+mod partial_file;

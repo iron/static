@@ -10,12 +10,15 @@ use std::time::Duration;
 
 use iron::prelude::*;
 use iron::{Handler, Url, status};
+use iron::headers::{AcceptRanges, RangeUnit, Range};
 #[cfg(feature = "cache")]
 use iron::modifier::Modifier;
-use iron::modifiers::Redirect;
+use iron::modifiers::{Header, Redirect};
 use mount::OriginalUrl;
 use requested_path::RequestedPath;
 use url;
+
+use partial_file::PartialFile;
 
 /// The static file-serving `Handler`.
 ///
@@ -76,7 +79,17 @@ impl Static {
     #[cfg(feature = "cache")]
     fn try_cache<P: AsRef<Path>>(&self, req: &mut Request, path: P) -> IronResult<Response> {
         match self.cache {
-            None => Ok(Response::with((status::Ok, path.as_ref()))),
+            None => {
+                let accept_range_header = Header(AcceptRanges(vec![RangeUnit::Bytes]));
+                match req.headers.get::<Range>() {
+                    None => Ok(Response::with((status::Ok, path.as_ref(), accept_range_header))),
+                    Some(&Range::Bytes(ref v)) => {
+                        let partial_file = PartialFile::from_path(path.as_ref(),v.clone());
+                        Ok(Response::with((partial_file, accept_range_header)))
+                    },
+                    Some(_) => Ok(Response::with((status::RangeNotSatisfiable, accept_range_header))),
+                }
+            },
             Some(ref cache) => cache.handle(req, path.as_ref()),
         }
     }
@@ -130,8 +143,27 @@ impl Handler for Static {
             Some(path) => self.try_cache(req, path),
             #[cfg(not(feature = "cache"))]
             Some(path) => {
-                let path: &Path = &path;
-                Ok(Response::with((status::Ok, path)))
+                let accept_range_header = Header(AcceptRanges(vec![RangeUnit::Bytes]));
+                let range_req_header = req.headers.get::<Range>().map(|h|{
+                    h.clone()
+                });
+                match range_req_header {
+                    None => {
+                        // deliver the whole file
+                        let path: &Path = &path;
+                        Ok(Response::with((status::Ok, path, accept_range_header)))
+                    },
+                    Some(range) => {
+                        // try to deliver partial content
+                        match range {
+                            Range::Bytes(vec_range) => {
+                                let partial_file = PartialFile::from_path(&path, vec_range);
+                                Ok(Response::with((status::Ok, partial_file, accept_range_header)))
+                            },
+                            _ => Ok(Response::with(status::RangeNotSatisfiable))
+                        }
+                    }
+                }
             },
         }
     }
@@ -190,7 +222,6 @@ impl Cache {
         use iron::headers::{ContentLength, ContentType, ETag, EntityTag};
         use iron::method::Method;
         use iron::mime::{Mime, TopLevel, SubLevel};
-        use iron::modifiers::Header;
 
         let seconds = self.duration.as_secs() as u32;
         let cache = vec![CacheDirective::Public, CacheDirective::MaxAge(seconds)];
@@ -206,9 +237,17 @@ impl Cache {
             };
             Response::with((status::Ok, Header(cont_type), Header(ContentLength(metadata.len()))))
         } else {
-            Response::with((status::Ok, path.as_ref()))
+            match req.headers.get::<Range>() {
+                None => Response::with((status::Ok, path.as_ref())),
+                Some(&Range::Bytes(ref v)) => {
+                    let partial_file = PartialFile::from_path(path.as_ref(),v.clone());
+                    Response::with(partial_file)
+                },
+                Some(_) => Response::with(status::RangeNotSatisfiable),
+            }
         };
 
+        response.headers.set(AcceptRanges(vec![RangeUnit::Bytes]));
         response.headers.set(CacheControl(cache));
         response.headers.set(LastModified(HttpDate(time::at(modified))));
         response.headers.set(ETag(EntityTag::weak(format!("{0:x}-{1:x}.{2:x}", size, modified.sec, modified.nsec))));
