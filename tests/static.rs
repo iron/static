@@ -3,7 +3,7 @@ extern crate iron;
 extern crate iron_test;
 extern crate staticfile;
 
-use iron::headers::{Headers, Location};
+use iron::headers::{ByteRangeSpec, Headers, Location, Range};
 use iron::status::Status;
 
 use iron_test::{request, ProjectBuilder};
@@ -145,6 +145,48 @@ fn prevents_from_escaping_root() {
             assert_eq!(str::from_utf8(&body).unwrap(), "this is file1");
         },
         Err(e) => panic!("{}", e)
+    }    
+}
+
+#[test]
+fn serves_partial_content() {
+    let p = ProjectBuilder::new("example").file("file1.html", "0123456789");
+    p.build();
+    let st = Static::new(p.root().clone());
+
+    // FromTo
+    let mut headers = Headers::new();
+    headers.set(Range::Bytes(vec![ByteRangeSpec::FromTo(2, 7)]));
+    match request::get("http://localhost:3000/file1.html", headers, &st) {
+        Ok(res) => {
+            let mut body = Vec::new();
+            res.body.unwrap().write_body(&mut body).unwrap();
+            assert_eq!(str::from_utf8(&body).unwrap(), "234567");
+        },
+        Err(e) => panic!("{}", e)
     }
 
+    // AllFrom
+    let mut headers = Headers::new();
+    headers.set(Range::Bytes(vec![ByteRangeSpec::AllFrom(5)]));
+    match request::get("http://localhost:3000/file1.html", headers, &st) {
+        Ok(res) => {
+            let mut body = Vec::new();
+            res.body.unwrap().write_body(&mut body).unwrap();
+            assert_eq!(str::from_utf8(&body).unwrap(), "56789");
+        },
+        Err(e) => panic!("{}", e)
+    }
+
+    // Last
+    let mut headers = Headers::new();
+    headers.set(Range::Bytes(vec![ByteRangeSpec::Last(3)]));
+    match request::get("http://localhost:3000/file1.html", headers, &st) {
+        Ok(res) => {
+            let mut body = Vec::new();
+            res.body.unwrap().write_body(&mut body).unwrap();
+            assert_eq!(str::from_utf8(&body).unwrap(), "789");
+        },
+        Err(e) => panic!("{}", e)
+    }
 }
