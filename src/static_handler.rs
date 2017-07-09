@@ -84,8 +84,11 @@ impl Static {
                 match req.headers.get::<Range>() {
                     None => Ok(Response::with((status::Ok, path.as_ref(), accept_range_header))),
                     Some(&Range::Bytes(ref v)) => {
-                        let partial_file = PartialFile::from_path(path.as_ref(),v.clone());
-                        Ok(Response::with((partial_file, accept_range_header)))
+                        if let Ok(partial_file) = PartialFile::from_path(path.as_ref(), v.clone()) {
+                            Ok(Response::with((partial_file, accept_range_header)))
+                        } else {
+                            Err(IronError::new(NoFile, status::NotFound))
+                        }
                     },
                     Some(_) => Ok(Response::with((status::RangeNotSatisfiable, accept_range_header))),
                 }
@@ -138,7 +141,6 @@ impl Handler for Static {
         match requested_path.get_file(&metadata) {
             // If no file is found, return a 404 response.
             None => Err(IronError::new(NoFile, status::NotFound)),
-            // Won't panic because we know the file exists from get_file.
             #[cfg(feature = "cache")]
             Some(path) => self.try_cache(req, path),
             #[cfg(not(feature = "cache"))]
@@ -157,8 +159,11 @@ impl Handler for Static {
                         // try to deliver partial content
                         match range {
                             Range::Bytes(vec_range) => {
-                                let partial_file = PartialFile::from_path(&path, vec_range);
-                                Ok(Response::with((status::Ok, partial_file, accept_range_header)))
+                                if let Ok(partial_file) = PartialFile::from_path(&path, vec_range) {
+                                    Ok(Response::with((status::Ok, partial_file, accept_range_header)))
+                                } else {
+                                    Err(IronError::new(NoFile, status::NotFound))
+                                }
                             },
                             _ => Ok(Response::with(status::RangeNotSatisfiable))
                         }
@@ -240,8 +245,11 @@ impl Cache {
             match req.headers.get::<Range>() {
                 None => Response::with((status::Ok, path.as_ref())),
                 Some(&Range::Bytes(ref v)) => {
-                    let partial_file = PartialFile::from_path(path.as_ref(),v.clone());
-                    Response::with(partial_file)
+                    if  let Ok(partial_file) = PartialFile::from_path(path.as_ref(), v.clone()) {
+                        Response::with(partial_file)
+                    } else {
+                        return Err(IronError::new(NoFile, status::NotFound))
+                    }
                 },
                 Some(_) => Response::with(status::RangeNotSatisfiable),
             }

@@ -34,12 +34,10 @@ impl PartialFile {
         }
     }
 
-    /// Panics if the file doesn't exist
-    pub fn from_path<P: AsRef<Path>, Range>(path: P, range: Range) -> PartialFile
+    pub fn from_path<P: AsRef<Path>, Range>(path: P, range: Range) -> Result<PartialFile, io::Error>
     where Range: Into<PartialFileRange> {
-        let file = File::open(path.as_ref())
-            .expect(&format!("No such file: {}", path.as_ref().display()));
-        Self::new(file, range)
+        let file = File::open(path.as_ref())?;
+        Ok(Self::new(file, range))
     }
 }
 
