@@ -1,3 +1,4 @@
+use std::cmp;
 use std::fs::File;
 use iron::headers::{ByteRangeSpec, ContentLength, ContentRange, ContentRangeSpec};
 use iron::response::{WriteBody, Response};
@@ -73,8 +74,8 @@ impl Modifier<Response> for PartialFile {
         let file_length : Option<u64> = metadata.map(|m| m.len());
         let range : Option<(u64, u64)> = match (self.range, file_length) {
             (FromTo(from, to), Some(file_length)) => {
-                if from <= to && to < file_length {
-                    Some((from, to))
+                if from <= to && from < file_length {
+                    Some((from, cmp::min(to, file_length - 1)))
                 } else {
                     None
                 }
