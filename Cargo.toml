@@ -1,7 +1,7 @@
 [package]
 
 name = "staticfile"
-version = "0.4.0"
+version = "0.5.0"
 authors = ["Zach Pomerantz <zmp@umich.edu>", "Jonathan Reem <jonathan.reem@gmail.com>"]
 description = "Static file serving for Iron."
 repository = "https://github.com/iron/staticfile"
@@ -12,8 +12,8 @@ keywords = ["iron", "web", "http", "file"]
 cache = ["filetime"]
 
 [dependencies]
-iron = "0.5"
-mount = "0.3"
+iron = "0.6"
+mount = "0.4"
 time = "0.1"
 url = "1.1"
 
