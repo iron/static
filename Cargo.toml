@@ -1,27 +1,34 @@
 [package]
-
-name = "staticfile"
-version = "0.4.0"
-authors = ["Zach Pomerantz <zmp@umich.edu>", "Jonathan Reem <jonathan.reem@gmail.com>"]
+authors = [
+    "Zach Pomerantz <zmp@umich.edu>",
+    "Jonathan Reem <jonathan.reem@gmail.com>",
+]
 description = "Static file serving for Iron."
-repository = "https://github.com/iron/staticfile"
+keywords = [
+    "iron",
+    "web",
+    "http",
+    "file",
+]
 license = "MIT"
-keywords = ["iron", "web", "http", "file"]
+name = "staticfile"
+repository = "https://github.com/iron/staticfile"
+version = "0.4.0"
+
+[dependencies]
+iron = "0.6.0"
+mount = "0.4.0"
+time = "0.1.38"
+url = "1.6.0"
+
+[dependencies.filetime]
+optional = true
+version = "0.1.14"
+
+[dev-dependencies]
+hyper = "0.10.0"
+iron-test = "0.6.0"
+router = "0.6.0"
 
 [features]
 cache = ["filetime"]
-
-[dependencies]
-iron = "0.5"
-mount = "0.3"
-time = "0.1"
-url = "1.1"
-
-[dependencies.filetime]
-version = "0.1"
-optional = true
-
-[dev-dependencies]
-hyper = "0.10"
-router = "0.5"
-iron-test = "0.5"
