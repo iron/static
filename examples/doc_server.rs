@@ -25,5 +25,5 @@ fn main() {
 
     println!("Doc server running on http://localhost:3000/doc/");
 
-    Iron::new(mount).http("127.0.0.1:3000").unwrap();
+    Iron::new(mount).http("127.0.0.1:3000");
 }

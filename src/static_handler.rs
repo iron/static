@@ -8,8 +8,8 @@ use time::{self, Timespec};
 #[cfg(feature = "cache")]
 use std::time::Duration;
 
+use iron::{Handler, Url, StatusCode};
 use iron::prelude::*;
-use iron::{Handler, Url, status};
 #[cfg(feature = "cache")]
 use iron::modifier::Modifier;
 use iron::modifiers::Redirect;
@@ -28,7 +28,7 @@ use url;
 /// ## Errors
 ///
 /// If the path doesn't match any real object in the filesystem, the handler will return
-/// a Response with `status::NotFound`. If an IO error occurs whilst attempting to serve
+/// a Response with `StatusCode::NOT_FOUND`. If an IO error occurs whilst attempting to serve
 /// a file, `FileError(IoError)` will be returned.
 #[derive(Clone)]
 pub struct Static {
@@ -76,7 +76,7 @@ impl Static {
     #[cfg(feature = "cache")]
     fn try_cache<P: AsRef<Path>>(&self, req: &mut Request, path: P) -> IronResult<Response> {
         match self.cache {
-            None => Ok(Response::with((status::Ok, path.as_ref()))),
+            None => Ok(Response::with((StatusCode::OK, path.as_ref()))),
             Some(ref cache) => cache.handle(req, path.as_ref()),
         }
     }
@@ -92,9 +92,9 @@ impl Handler for Static {
             Ok(meta) => meta,
             Err(e) => {
                 let status = match e.kind() {
-                    io::ErrorKind::NotFound => status::NotFound,
-                    io::ErrorKind::PermissionDenied => status::Forbidden,
-                    _ => status::InternalServerError,
+                    io::ErrorKind::NotFound => StatusCode::NOT_FOUND,
+                    io::ErrorKind::PermissionDenied => StatusCode::FORBIDDEN,
+                    _ => StatusCode::INTERNAL_SERVER_ERROR,
                 };
 
                 return Err(IronError::new(e, status))
@@ -117,21 +117,21 @@ impl Handler for Static {
             original_url.path_segments_mut().unwrap().push("");
             let redirect_path = Url::from_generic_url(original_url).unwrap();
 
-            return Ok(Response::with((status::MovedPermanently,
+            return Ok(Response::with((StatusCode::MOVED_PERMANENTLY,
                                       format!("Redirecting to {}", redirect_path),
                                       Redirect(redirect_path))));
         }
 
         match requested_path.get_file(&metadata) {
             // If no file is found, return a 404 response.
-            None => Err(IronError::new(NoFile, status::NotFound)),
+            None => Err(IronError::new(NoFile, StatusCode::NOT_FOUND)),
             // Won't panic because we know the file exists from get_file.
             #[cfg(feature = "cache")]
             Some(path) => self.try_cache(req, path),
             #[cfg(not(feature = "cache"))]
             Some(path) => {
                 let path: &Path = &path;
-                Ok(Response::with((status::Ok, path)))
+                Ok(Response::with((StatusCode::OK, path)))
             },
         }
     }
@@ -155,12 +155,14 @@ impl Cache {
     }
 
     fn handle<P: AsRef<Path>>(&self, req: &mut Request, path: P) -> IronResult<Response> {
-        use iron::headers::{IfModifiedSince, HttpDate};
+        use iron::headers::IF_MODIFIED_SINCE;
+        use httpdate::HttpDate;
+        use std::str::FromStr;
 
         let path = path.as_ref();
 
         let (size, last_modified_time) = match fs::metadata(path) {
-            Err(error) => return Err(IronError::new(error, status::InternalServerError)),
+            Err(error) => return Err(IronError::new(error, StatusCode::INTERNAL_SERVER_ERROR)),
             Ok(metadata) => {
                 use filetime::FileTime;
 
@@ -169,13 +171,14 @@ impl Cache {
             },
         };
 
-        let if_modified_since = match req.headers.get::<IfModifiedSince>().cloned() {
+        let if_modified_since = match req.headers.get(IF_MODIFIED_SINCE).cloned() {
             None => return self.response_with_cache(req, path, size, last_modified_time),
-            Some(IfModifiedSince(HttpDate(time))) => time.to_timespec(),
+            // TODO: Error handling for to_str() & from_str()
+            Some(time) => HttpDate::from_str(time.to_str().unwrap()).unwrap().0.to_timespec(), 
         };
 
         if last_modified_time <= if_modified_since {
-            Ok(Response::with(status::NotModified))
+            Ok(Response::with(StatusCode::NOT_MODIFIED))
         } else {
             self.response_with_cache(req, path, size, last_modified_time)
         }
@@ -186,32 +189,35 @@ impl Cache {
                                            path: P,
                                            size: u64,
                                            modified: Timespec) -> IronResult<Response> {
-        use iron::headers::{CacheControl, LastModified, CacheDirective, HttpDate};
-        use iron::headers::{ContentLength, ContentType, ETag, EntityTag};
+        use iron::headers::{CACHE_CONTROL, LAST_MODIFIED, CONTENT_LENGTH, CONTENT_TYPE, ETAG};
+        use httpdate::HttpDate;
         use iron::method::Method;
-        use iron::mime::{Mime, TopLevel, SubLevel};
-        use iron::modifiers::Header;
+        use iron::mime;
 
         let seconds = self.duration.as_secs() as u32;
-        let cache = vec![CacheDirective::Public, CacheDirective::MaxAge(seconds)];
         let metadata = fs::metadata(path.as_ref());
 
-        let metadata = try!(metadata.map_err(|e| IronError::new(e, status::InternalServerError)));
+        let metadata = try!(metadata.map_err(|e| IronError::new(e, StatusCode::INTERNAL_SERVER_ERROR)));
 
-        let mut response = if req.method == Method::Head {
-            let has_ct = req.headers.get::<ContentType>();
+        let mut response = if req.method == Method::HEAD {
+            let has_ct = req.headers.get(CONTENT_TYPE);
             let cont_type = match has_ct {
-                None => ContentType(Mime(TopLevel::Text, SubLevel::Plain, vec![])),
+                None => mime::TEXT_PLAIN.as_ref().parse().unwrap(),
                 Some(t) => t.clone()
             };
-            Response::with((status::Ok, Header(cont_type), Header(ContentLength(metadata.len()))))
+            let mut response = Response::with(StatusCode::OK);
+            response.headers.insert(CONTENT_TYPE, cont_type);
+            response.headers.insert(CONTENT_LENGTH, metadata.len().to_string().parse().unwrap());
+            response
+                
         } else {
-            Response::with((status::Ok, path.as_ref()))
+            Response::with((StatusCode::OK, path.as_ref()))
         };
 
-        response.headers.set(CacheControl(cache));
-        response.headers.set(LastModified(HttpDate(time::at(modified))));
-        response.headers.set(ETag(EntityTag::weak(format!("{0:x}-{1:x}.{2:x}", size, modified.sec, modified.nsec))));
+        response.headers.insert(CACHE_CONTROL, "public".parse().unwrap());;
+        response.headers.insert(CACHE_CONTROL, format!("max-age={}", seconds).parse().unwrap());
+        response.headers.insert(LAST_MODIFIED, format!("{}",HttpDate(time::at(modified))).parse().unwrap());
+        response.headers.insert(ETAG, format!("{0:x}-{1:x}.{2:x}", size, modified.sec, modified.nsec).parse().unwrap());
 
         Ok(response)
     }
